@@ -1,9 +1,24 @@
+import 'dart:isolate';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import 'MainAlarmPage.dart';
 import 'MainSleepPage.dart';
 
-void main() => runApp(MyApp());
+const String isolateName = 'isolate';
+final ReceivePort port = ReceivePort();
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  IsolateNameServer.registerPortWithName(
+    port.sendPort,
+    isolateName,
+  );
+
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
