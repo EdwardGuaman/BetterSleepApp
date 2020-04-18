@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
@@ -6,9 +5,8 @@ import 'dart:ui';
 
 import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 
-import 'MainAlarmPage.dart';
 import 'main.dart';
 
 class SleepPage extends StatelessWidget {
@@ -43,7 +41,14 @@ class _SleepHomePageState extends State<_SleepHomePage> {
   // The callback for our alarm
   static Future<void> callback() async {
     print('Alarm fired!');
-
+    FlutterRingtonePlayer.play(
+        android: AndroidSounds.alarm,
+        ios: IosSounds.alarm,
+        looping: true,
+        volume: .5,
+        asAlarm: true);
+    sleep(new Duration(seconds: 10));
+    FlutterRingtonePlayer.stop();
     // Get the previous cached count and increment it.
 
     // This will be null if we're running in the background.
@@ -53,53 +58,71 @@ class _SleepHomePageState extends State<_SleepHomePage> {
 
   String jsonvoffile;
 
-  _write(String text) async {
-    final Directory directory = await getApplicationDocumentsDirectory();
-    final File file = File('${directory.path}/Alarms.txt');
-    await file.writeAsString(text);
-  }
-
-  Future<String> _read() async {
-    final Directory directory = await getApplicationDocumentsDirectory();
-    final File file = File('${directory.path}/Alarms.txt');
-    jsonvoffile = file.readAsStringSync();
-    return file.readAsString();
-  }
+//  _write(String text) async {
+//    final Directory directory = await getApplicationDocumentsDirectory();
+//    final File file = File('${directory.path}/Alarms.txt');
+//    await file.writeAsString(text);
+//  }
+//
+//  Future<String> _read() async {
+//    final Directory directory = await getApplicationDocumentsDirectory();
+//    final File file = File('${directory.path}/Alarms.txt');
+//    jsonvoffile = file.readAsStringSync();
+//    return file.readAsString();
+//  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sleep route'),
+        title: Text('Quick alarms'),
       ),
       body: Center(
-        child: RaisedButton(
-          child: Text('Open route'),
-          onPressed: () {
-            var test = Alarm(
-                false, "Test", DateTime.now().add(new Duration(minutes: 1)));
-            print(test);
-            String asString = jsonEncode(test);
-            print("before write: " + asString);
-            _write(asString);
-            // Navigate to second route when tapped.
-          },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Expanded(
+              flex: 1,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: RaisedButton(
+                  child: Text('5 minutes'),
+                  onPressed: () {
+                    AndroidAlarmManager.oneShot(Duration(minutes: 5),
+                        Random().nextInt(pow(2, 31)), callback);
+                  },
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 1,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: RaisedButton(
+                  child: Text('10 minutes'),
+                  onPressed: () {
+                    AndroidAlarmManager.oneShot(Duration(minutes: 10),
+                        Random().nextInt(pow(2, 31)), callback);
+                  },
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 1,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: RaisedButton(
+                  child: Text('15 minutes'),
+                  onPressed: () {
+                    AndroidAlarmManager.oneShot(Duration(minutes: 15),
+                        Random().nextInt(pow(2, 31)), callback);
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          var then = _read().then((value) {
-            Alarm alarm = Alarm.fromJson(jsonDecode(value));
-            AndroidAlarmManager.oneShotAt(
-              alarm.alarmTime,
-              Random().nextInt(pow(2, 31)),
-              callback,
-              exact: true,
-              wakeup: true,
-            );
-            print(alarm);
-          });
-        },
       ),
     );
   }
